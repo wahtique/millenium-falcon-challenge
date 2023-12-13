@@ -1,15 +1,7 @@
-import Dependencies._
+import Dependencies.*
 
 ThisBuild / organization := "io.github.wahtique"
 ThisBuild / scalaVersion := "3.3.1"
-
-lazy val `millenium-falcon-challenge` =
-  project
-    .in(file("."))
-    .settings(name := "millenium-falcon-challenge")
-    .settings(commonSettings)
-    .settings(autoImportSettings)
-    .settings(dependencies)
 
 lazy val commonSettings = {
   lazy val commonScalacOptions = Seq(
@@ -21,7 +13,7 @@ lazy val commonSettings = {
         .filterNot(Scalac.FatalWarnings.toSet) :+ "-Wconf:any:silent"
     },
     Test / console / scalacOptions :=
-      (Compile / console / scalacOptions).value,
+      (Compile / console / scalacOptions).value
   )
 
   lazy val otherCommonSettings = Seq(
@@ -33,7 +25,7 @@ lazy val commonSettings = {
 
   Seq(
     commonScalacOptions,
-    otherCommonSettings,
+    otherCommonSettings
   ).reduceLeft(_ ++ _)
 }
 
@@ -44,24 +36,58 @@ lazy val autoImportSettings = Seq(
       "scala",
       "scala.Predef",
       "scala.annotation",
-      "scala.util.chaining",
+      "scala.util.chaining"
     ).mkString(start = "-Yimports:", sep = ",", end = ""),
   Test / scalacOptions +=
     Seq(
       "org.scalacheck",
-      "org.scalacheck.Prop",
-    ).mkString(start = "-Yimports:", sep = ",", end = ""),
+      "org.scalacheck.Prop"
+    ).mkString(start = "-Yimports:", sep = ",", end = "")
 )
 
-lazy val dependencies = Seq(
+lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
-    // main dependencies
+    org.typelevel.catsEffect, // effect system
+    `io.github`.iltotore.iron // refined types
   ),
   libraryDependencies ++= Seq(
-    com.eed3si9n.expecty.expecty,
-    org.scalacheck.scalacheck,
-    org.scalameta.`munit-scalacheck`,
-    org.scalameta.munit,
-    org.typelevel.`discipline-munit`,
-  ).map(_ % Test),
+    org.scalameta.munit,                // test framework
+    org.scalacheck.scalacheck,          // property testing
+    org.scalameta.munitScalacheck,      // scalacheck <-> munit
+    org.typelevel.munitCatsEffect,      // cats-effect <-> munit
+    org.typelevel.scalacheckEffect,     // cats-effect <-> scalacheck
+    `io.github`.iltotore.ironScalacheck // iron <-> scalacheck
+  ).map(_ % Test)
 )
+
+lazy val core =
+  project
+    .in(file("modules/core"))
+    .settings(commonSettings)
+    .settings(autoImportSettings)
+    .settings(commonDependencies)
+    .settings(
+      libraryDependencies ++= Seq(
+        org.typelevel.spire // math
+      )
+    )
+
+lazy val backend =
+  project
+    .in(file("modules/backend"))
+    .settings(commonSettings)
+    .settings(autoImportSettings)
+    .settings(commonDependencies)
+    .enablePlugins(BuildInfoPlugin)
+    .settings(
+      buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+      buildInfoPackage := "backend",
+      libraryDependencies ++= Seq(
+        com.softwaremill.sttp.tapir.tapirCore,           // type safe api definition
+        com.softwaremill.sttp.tapir.tapirJsonPickler,    // type safe json
+        com.softwaremill.sttp.tapir.tapirHttp4sServer,   // api definitions <-> http4s server
+        org.http4s.http4sEmberServer,                    // http4s server
+        com.softwaremill.sttp.tapir.tapirSwaggerUiBundle // swagger ui
+      )
+    )
+    .dependsOn(core)
