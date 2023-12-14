@@ -30,7 +30,19 @@ object Dependencies {
   }
 
   object io {
+
+    object circe {
+      val circeCore    = "io.circe" %% "circe-core"    % "0.14.5"
+      val circeGeneric = "io.circe" %% "circe-generic" % "0.14.5"
+      val circeParser  = "io.circe" %% "circe-parser"  % "0.14.5"
+    }
+
+    object crashbox {
+      val simplesql = "io.crashbox" %% "simplesql" % "0.2.2"
+    }
+
     object github {
+
       object iltotore {
         val iron           = "io.github.iltotore" %% "iron"            % "2.3.0"
         val ironScalacheck = "io.github.iltotore" %% "iron-scalacheck" % "2.3.0"
@@ -38,10 +50,6 @@ object Dependencies {
         val ironCiris      = "io.github.iltotore" %% "iron-ciris"      % "2.3.0"
         val ironCirce      = "io.github.iltotore" %% "iron-circe"      % "2.3.0"
       }
-    }
-
-    object crashbox {
-      val simplesql = "io.crashbox" %% "simplesql" % "0.2.2"
     }
   }
 

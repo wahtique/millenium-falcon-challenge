@@ -1,7 +1,7 @@
 import Dependencies._
-import Dependencies.{io => dio}
+import Dependencies.{io => ioo}
 
-ThisBuild / organization := "io.github.wahtique"
+ThisBuild / organization := "ioo.github.wahtique"
 ThisBuild / scalaVersion := "3.3.1"
 
 lazy val commonSettings = {
@@ -49,8 +49,8 @@ lazy val autoImportSettings = Seq(
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
     org.typelevel.catsEffect,       // effect system
-    dio.github.iltotore.iron,       // refined types
-    dio.github.iltotore.ironCats,   // config <-> refined types
+    ioo.github.iltotore.iron,       // refined types
+    ioo.github.iltotore.ironCats,   // config <-> refined types
     com.outr.scribe,                // logging
     com.outr.scribeCats,            // logging <-> cats effect
     com.github.dwickern.scalaNameof // nameof stuff at compile time
@@ -61,7 +61,7 @@ lazy val commonDependencies = Seq(
     org.scalameta.munitScalacheck,     // scalacheck <-> munit
     org.typelevel.munitCatsEffect,     // cats-effect <-> munit
     org.typelevel.scalacheckEffect,    // cats-effect <-> scalacheck
-    dio.github.iltotore.ironScalacheck // iron <-> scalacheck
+    ioo.github.iltotore.ironScalacheck // iron <-> scalacheck
   ).map(_ % Test)
 )
 
@@ -74,13 +74,16 @@ lazy val core =
     .settings(
       libraryDependencies ++= Seq(
         org.typelevel.spire,           // math
-        dio.crashbox.simplesql,        // sql
+        ioo.crashbox.simplesql,        // sql
         org.xerial.sqliteJdbc,         // sqlite jdbc driver
         com.zaxxer.hikariCP,           // connection pool
+        ioo.circe.circeCore,           // json
+        ioo.circe.circeGeneric,        // json codecs derivation
+        ioo.circe.circeParser,         // json parsing
         is.cir.ciris,                  // config
         is.cir.cirisCirce,             // config <-> json
-        dio.github.iltotore.ironCiris, // config <-> refined types
-        dio.github.iltotore.ironCirce  // json <-> refined types
+        ioo.github.iltotore.ironCiris, // config <-> refined types
+        ioo.github.iltotore.ironCirce  // json <-> refined types
       )
     )
 
