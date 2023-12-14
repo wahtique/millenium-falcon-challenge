@@ -1,6 +1,18 @@
 import sbt._
 object Dependencies {
   object com {
+
+    object github {
+      object dwickern {
+        val scalaNameof = "com.github.dwickern" %% "scala-nameof" % "4.0.0" % "provided"
+      }
+    }
+
+    object outr {
+      val scribe     = "com.outr" %% "scribe"      % "3.13.0"
+      val scribeCats = "com.outr" %% "scribe-cats" % "3.13.0"
+    }
+
     object softwaremill {
       object sttp {
         object tapir {
@@ -11,14 +23,40 @@ object Dependencies {
         }
       }
     }
-  }
-  object `io.github` {
-    object iltotore {
-      val iron           = "io.github.iltotore" %% "iron"            % "2.3.0"
-      val ironScalacheck = "io.github.iltotore" %% "iron-scalacheck" % "2.3.0"
+
+    object zaxxer {
+      val hikariCP = "com.zaxxer" % "HikariCP" % "5.1.0"
     }
   }
+
+  object io {
+    object github {
+      object iltotore {
+        val iron           = "io.github.iltotore" %% "iron"            % "2.3.0"
+        val ironScalacheck = "io.github.iltotore" %% "iron-scalacheck" % "2.3.0"
+        val ironCats       = "io.github.iltotore" %% "iron-cats"       % "2.3.0"
+        val ironCiris      = "io.github.iltotore" %% "iron-ciris"      % "2.3.0"
+        val ironCirce      = "io.github.iltotore" %% "iron-circe"      % "2.3.0"
+      }
+    }
+
+    object crashbox {
+      val simplesql = "io.crashbox" %% "simplesql" % "0.2.2"
+    }
+  }
+
+  object is {
+    object cir {
+      val ciris      = "is.cir" %% "ciris"       % "3.5.0"
+      val cirisCirce = "is.cir" %% "ciris-circe" % "3.5.0"
+    }
+  }
+
   object org {
+
+    object http4s {
+      val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % "0.23.24"
+    }
     object scalacheck {
       val scalacheck = "org.scalacheck" %% "scalacheck" % "1.17.0"
     }
@@ -37,8 +75,8 @@ object Dependencies {
       val spire            = "org.typelevel" %% "spire"             % "0.18.0"
     }
 
-    object http4s {
-      val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % "0.23.24"
+    object xerial {
+      val sqliteJdbc = "org.xerial" % "sqlite-jdbc" % "3.44.1.0"
     }
   }
 }

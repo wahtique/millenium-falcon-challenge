@@ -3,7 +3,9 @@ package core.model
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.*
 
-type MissionDays = Int :| GreaterEqual[0]
+type Positive    = GreaterEqual[0]
+type MissionDays = Int :| Positive
+object MissionDays extends RefinedTypeOps[Int, Positive, MissionDays]
 
 /** Imperial data intercepted by the rebels.
   *

@@ -5,6 +5,7 @@ import cats.data.NonEmptySeq
 import core.computer.Routing.Trajectory
 import core.computer.Routing.Trajectory.Action
 import core.model.BountyHuntersLocation
+import core.model.Error.MissionFailure
 import core.model.Galaxy
 import core.model.ImperialData
 import core.model.MissionDays
@@ -204,7 +205,7 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         // dist trap -> destination
         trapToDestination <- strictlyPositiveDays
         // countDown must be juuuuust right to accomomadate a pitstop
-        totalDist = originToTrap + trapToDestination
+        totalDist              = originToTrap + trapToDestination
         countDown: MissionDays = (totalDist + 2).refine
         // autonomy is sufficient to cover everything
         // ie. refueling is not needed to reach the destination

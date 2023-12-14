@@ -25,7 +25,7 @@ object Galaxy:
     def empty: Galaxy                         = Galaxy.empty
     def combine(x: Galaxy, y: Galaxy): Galaxy = Galaxy(x.planets |+| y.planets)
 
-/** A stable hyperspace lane between two systems.
+/** A stable hyperspace lane between two planets.
   *
   * A route is represented as a uni-directional connection between two systems even though travel is bi-directional.
   * Hence R === inverse(R) must be assumed.

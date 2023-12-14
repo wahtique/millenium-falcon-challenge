@@ -2,10 +2,10 @@ import Scalac.Keys._
 
 ThisBuild / scalacOptions ++= Seq(
   "-Wunused:imports", // always on for OrganizeImports
-  "-Yexplicit-nulls",
+  // "-Yexplicit-nulls", too much trouble to keep it
   "-Ykind-projector",
   "-Ysafe-init",
-  "-language:all",
+  "-language:all"
 ) ++
   Seq("-encoding", "UTF-8") ++
   Seq("-rewrite", "-indent") ++
@@ -17,7 +17,7 @@ ThisBuild / warnings := {
   if (insideCI.value)
     Seq(
       "-Wconf:any:error", // for scalac warnings
-      "-Xfatal-warnings", // for wartremover warts
+      "-Xfatal-warnings"  // for wartremover warts
     )
   else if (lintOn.value)
     Seq("-Wconf:any:warning")

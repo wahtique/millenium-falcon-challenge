@@ -2,24 +2,15 @@ package core.computer
 
 import cats.data.NonEmptySeq
 import cats.kernel.Order
+import cats.syntax.order.*
 import core.computer.Routing.Trajectory.Action
+import core.model.Error.MissionFailure
 import core.model.Galaxy
 import core.model.ImperialData
 import core.model.MissionDays
 import core.model.Planet
 import core.model.Route
 import io.github.iltotore.iron.*
-
-sealed trait MissionFailure extends Exception
-
-object MissionFailure:
-  object UnreachablePlanet extends MissionFailure:
-    override def getMessage(): String | Null = "Planet is unreachable"
-  object MissionAlreadyFailed extends MissionFailure:
-    override def getMessage(): String | Null = "Mission already failed"
-  object MilleniumFalconCantFly extends MissionFailure:
-    override def getMessage(): String | Null = "Millenium Falcon can't fly"
-
 object Routing:
 
   def findBestOdds(galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays)(
@@ -59,7 +50,9 @@ object Routing:
     if !(galaxy.contains(origin) && galaxy.contains(destination)) then Left(MissionFailure.UnreachablePlanet)
     // if the origin is the destination then the mission is already complete
     else if origin == destination then
-      Right(Trajectory(NonEmptySeq.one(origin), Trajectory.Action.Noop, autonomy, 0, 0))
+      Right(
+        Trajectory(NonEmptySeq.one(origin), Trajectory.Action.Noop, autonomy, 0, 0)
+      )
     // if the origin is not the same as the destination and the count down is 0 then the mission is already failed
     else if imperialData.countDown == 0 then Left(MissionFailure.MissionAlreadyFailed)
     // if the millenium falcon can't fly then the mission will fail
