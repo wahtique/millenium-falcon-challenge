@@ -67,7 +67,7 @@ lazy val commonDependencies = Seq(
 
 lazy val core =
   project
-    .in(file("modules/core"))
+    .in(file("src/core"))
     .settings(commonSettings)
     .settings(autoImportSettings)
     .settings(commonDependencies)
@@ -86,7 +86,7 @@ lazy val core =
 
 lazy val backend =
   project
-    .in(file("modules/backend"))
+    .in(file("src/backend"))
     .settings(commonSettings)
     .settings(autoImportSettings)
     .settings(commonDependencies)
