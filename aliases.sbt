@@ -8,21 +8,23 @@ addCommandAlias("root", "cd millenium-falcon-challenge")
 addCommandAlias("c", "compile")
 addCommandAlias("ca", "Test / compile")
 addCommandAlias("t", "test")
-addCommandAlias("r", "run")
-addCommandAlias("rs", "reStart")
-addCommandAlias("s", "reStop")
+addCommandAlias("r", "reload")
 addCommandAlias("star", "thankYouStars")
 addCommandAlias(
-  "styleCheck",
-  "scalafmtSbtCheck; scalafmtCheckAll; Test / compile; scalafixAll --check",
+  "check",
+  "scalafmtSbtCheck; scalafmtCheckAll; Test / compile; scalafixAll --check"
 )
 addCommandAlias(
-  "styleFix",
-  "Test / compile; scalafixAll; scalafmtSbt; scalafmtAll",
+  "fix",
+  "Test / compile; scalafixAll; scalafmtSbt; scalafmtAll"
+)
+addCommandAlias(
+  "fmt",
+  "scalafmtSbt; scalafmtAll"
 )
 addCommandAlias(
   "up2date",
-  "reload plugins; dependencyUpdates; reload return; dependencyUpdates",
+  "reload plugins; dependencyUpdates; reload return; dependencyUpdates"
 )
 
 onLoadMessage +=
@@ -36,11 +38,11 @@ onLoadMessage +=
       |│ ${styled("c")}           │ compile           │
       |│ ${styled("ca")}          │ compile all       │
       |│ ${styled("t")}           │ test              │
-      |│ ${styled("r")}           │ run               │
-      |│ ${styled("rs")}          │ reStart           │
+      |│ ${styled("r")}           │ reload sbt        │
       |│ ${styled("s")}           │ reStop            │
       |│ ${styled("star")}        │ thankYouStars     │
-      |│ ${styled("styleCheck")}  │ fmt & fix check   │
-      |│ ${styled("styleFix")}    │ fix then fmt      │
+      |│ ${styled("check")}       │ fmt & fix check   │
+      |│ ${styled("fix")}         │ fix then fmt      │
+      |│ ${styled("fmt")}         │ fmt               │
       |│ ${styled("up2date")}     │ dependencyUpdates │
       |╰─────────────┴───────────────────╯""".stripMargin

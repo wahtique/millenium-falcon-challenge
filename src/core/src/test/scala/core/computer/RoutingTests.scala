@@ -1,16 +1,10 @@
 package core.computer
 
-import Routing.findBestOdds
 import cats.data.NonEmptySeq
-import core.computer.Routing.Trajectory
+import core.computer.Routing.*
 import core.computer.Routing.Trajectory.Action
-import core.model.BountyHuntersLocation
+import core.model.*
 import core.model.Error.MissionFailure
-import core.model.Galaxy
-import core.model.ImperialData
-import core.model.MissionDays
-import core.model.Planet
-import core.model.Route
 import io.github.iltotore.iron.*
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.forAll

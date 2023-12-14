@@ -4,12 +4,8 @@ import cats.data.NonEmptySeq
 import cats.kernel.Order
 import cats.syntax.order.*
 import core.computer.Routing.Trajectory.Action
+import core.model.*
 import core.model.Error.MissionFailure
-import core.model.Galaxy
-import core.model.ImperialData
-import core.model.MissionDays
-import core.model.Planet
-import core.model.Route
 import io.github.iltotore.iron.*
 object Routing:
 

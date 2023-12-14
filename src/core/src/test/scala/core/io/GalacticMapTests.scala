@@ -1,11 +1,9 @@
 package core.io
 
-import core.model.Planet
-import core.model.Route
+import core.model.*
 import io.github.iltotore.iron.*
 import munit.CatsEffectSuite
 import scala.concurrent.duration.*
-import scala.concurrent.duration.Duration
 
 class GalacticMapTests extends CatsEffectSuite with TestResourceLoader:
 

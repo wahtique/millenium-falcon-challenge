@@ -4,7 +4,7 @@ object Scalac {
   val Lint =
     Seq(
       "-Wunused:all",
-      "-Wvalue-discard",
+      "-Wvalue-discard"
     )
 
   val FatalWarnings =
