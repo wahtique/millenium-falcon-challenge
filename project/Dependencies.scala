@@ -8,6 +8,11 @@ object Dependencies {
       }
     }
 
+    object monovore {
+      val decline       = "com.monovore" %% "decline"        % "2.4.1"
+      val declineEffect = "com.monovore" %% "decline-effect" % "2.4.1"
+    }
+
     object outr {
       val scribe     = "com.outr" %% "scribe"      % "3.13.0"
       val scribeCats = "com.outr" %% "scribe-cats" % "3.13.0"

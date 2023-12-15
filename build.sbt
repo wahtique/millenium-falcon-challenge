@@ -48,12 +48,15 @@ lazy val autoImportSettings = Seq(
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
-    org.typelevel.catsEffect,       // effect system
-    ioo.github.iltotore.iron,       // refined types
-    ioo.github.iltotore.ironCats,   // config <-> refined types
-    com.outr.scribe,                // logging
-    com.outr.scribeCats,            // logging <-> cats effect
-    com.github.dwickern.scalaNameof // nameof stuff at compile time
+    org.typelevel.catsEffect,        // effect system
+    ioo.github.iltotore.iron,        // refined types
+    ioo.github.iltotore.ironCats,    // config <-> refined types
+    com.outr.scribe,                 // logging
+    com.outr.scribeCats,             // logging <-> cats effect
+    com.github.dwickern.scalaNameof, // nameof stuff at compile time
+    ioo.crashbox.simplesql,          // sql
+    org.xerial.sqliteJdbc,           // sqlite jdbc driver
+    com.zaxxer.hikariCP              // connection pool
   ),
   libraryDependencies ++= Seq(
     org.scalameta.munit,               // test framework
@@ -71,12 +74,14 @@ lazy val core =
     .settings(commonSettings)
     .settings(autoImportSettings)
     .settings(commonDependencies)
+    .enablePlugins(BuildInfoPlugin)
+    .settings(
+      buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+      buildInfoPackage := "core"
+    )
     .settings(
       libraryDependencies ++= Seq(
         org.typelevel.spire,           // math
-        ioo.crashbox.simplesql,        // sql
-        org.xerial.sqliteJdbc,         // sqlite jdbc driver
-        com.zaxxer.hikariCP,           // connection pool
         ioo.circe.circeCore,           // json
         ioo.circe.circeGeneric,        // json codecs derivation
         ioo.circe.circeParser,         // json parsing
@@ -87,13 +92,26 @@ lazy val core =
       )
     )
 
+lazy val cli =
+  project
+    .in(file("src/cli"))
+    .settings(commonSettings)
+    .settings(autoImportSettings)
+    .settings(commonDependencies)
+    .settings(
+      libraryDependencies ++= Seq(
+        com.monovore.decline,      // cli
+        com.monovore.declineEffect // cli <-> cats effect
+      )
+    )
+    .dependsOn(core % "test->test;compile->compile")
+
 lazy val backend =
   project
     .in(file("src/backend"))
     .settings(commonSettings)
     .settings(autoImportSettings)
     .settings(commonDependencies)
-    .enablePlugins(BuildInfoPlugin)
     .settings(
       buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
       buildInfoPackage := "backend",

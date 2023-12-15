@@ -55,6 +55,7 @@ object Routing:
             val pivot = trajectory.head
             if pivot == destination then Some(trajectory)
             else
+              // todo maybe optimize even further by trimming all other Travels where head == pivot
               val newTrajectories  = expand(galaxy, imperialData, autonomy)(trajectory)
               val nextTrajectories = newTrajectories ++ trajectories.filterNot(_ == trajectory)
               explore(nextTrajectories)

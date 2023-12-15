@@ -261,7 +261,7 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
       val actual = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Right[MissionFailure, SuccessOdds](1d))
 
-  test("destination cannot be reached witout encountering bounty hunters => 90% succcess chances"):
+  test("destination cannot be reached without encountering bounty hunters => 90% succcess chances"):
     forAll(
       for
         // dist origin -> trap
@@ -280,7 +280,7 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         safeToDestination: MissionDays = (autonomy + 1).assume
         // bounty hunters must be camping at the trap to ensure
         // the millenium falcon MUST encounter them
-        trapDays: Seq[MissionDays] = (0 to originToTrap).toArray.toSeq.map(_.refine)
+        trapDays: Seq[MissionDays] = (0 to countDown).toArray.toSeq.map(_.refine)
       yield (
         galaxy(originToSafe, safeToDestination, originToTrap, trapToDestination),
         imperialData(countDown, trapDays),
