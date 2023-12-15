@@ -3,6 +3,7 @@ package core.model
 import cats.kernel.Monoid
 import cats.syntax.monoid.*
 import io.circe.Decoder
+import io.circe.Encoder
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.string.*
 
@@ -10,6 +11,7 @@ type NotBlank      = Not[Blank]
 opaque type Planet = String :| NotBlank
 object Planet extends RefinedTypeOps[String, NotBlank, Planet]:
   given decoder: Decoder[Planet] = Decoder.decodeString.emap(Planet.either)
+  given encoder: Encoder[Planet] = Encoder.encodeString.contramap(_.value)
 
 /** Millenias of astrophysics summed up in one line.
   *

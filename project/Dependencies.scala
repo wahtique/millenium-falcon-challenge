@@ -22,9 +22,10 @@ object Dependencies {
       object sttp {
         object tapir {
           val tapirCore            = "com.softwaremill.sttp.tapir" %% "tapir-core"              % "1.9.5"
-          val tapirJsonPickler     = "com.softwaremill.sttp.tapir" %% "tapir-json-pickler"      % "1.9.5"
           val tapirHttp4sServer    = "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % "1.9.5"
           val tapirSwaggerUiBundle = "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % "1.9.5"
+          val tapirCirce           = "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % "1.9.5"
+          val tapirIron            = "com.softwaremill.sttp.tapir" %% "tapir-iron"              % "1.9.5"
         }
       }
     }

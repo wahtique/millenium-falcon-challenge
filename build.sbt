@@ -13,6 +13,7 @@ lazy val commonSettings = {
         .filterNot(Scalac.Lint.toSet)
         .filterNot(Scalac.FatalWarnings.toSet) :+ "-Wconf:any:silent"
     },
+    Compile / run / fork := true,
     Test / console / scalacOptions :=
       (Compile / console / scalacOptions).value
   )
@@ -117,8 +118,9 @@ lazy val backend =
       buildInfoPackage := "backend",
       libraryDependencies ++= Seq(
         com.softwaremill.sttp.tapir.tapirCore,           // type safe api definition
-        com.softwaremill.sttp.tapir.tapirJsonPickler,    // type safe json
+        com.softwaremill.sttp.tapir.tapirCirce,          // json
         com.softwaremill.sttp.tapir.tapirHttp4sServer,   // api definitions <-> http4s server
+        com.softwaremill.sttp.tapir.tapirIron,           // refined types
         org.http4s.http4sEmberServer,                    // http4s server
         com.softwaremill.sttp.tapir.tapirSwaggerUiBundle // swagger ui
       )
