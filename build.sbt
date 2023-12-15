@@ -13,7 +13,7 @@ lazy val commonSettings = {
         .filterNot(Scalac.Lint.toSet)
         .filterNot(Scalac.FatalWarnings.toSet) :+ "-Wconf:any:silent"
     },
-    Compile / run / fork := true,
+    // Compile / run / fork := true,
     Test / console / scalacOptions :=
       (Compile / console / scalacOptions).value
   )

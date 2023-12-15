@@ -6,7 +6,7 @@ import cats.implicits.*
 import com.monovore.decline.*
 import com.monovore.decline.effect.*
 import core.BuildInfo
-import core.computer.Routing
+import core.computer.Pathfinder
 import core.io.GalacticMapLoader
 import core.io.ImperialDataLoader
 import core.io.MissionParametersLoader
@@ -43,5 +43,5 @@ object R2D2
         .make(imperialDataInput)
         .mapK(EitherT.liftK[IO, IOFailure])
         .use(_.load)
-      odds <- EitherT.fromEither(Routing.findBestOdds(galaxy, imperialData, missionParameters))
+      odds <- EitherT.fromEither(Pathfinder.findBestOdds(galaxy, imperialData, missionParameters))
     yield odds

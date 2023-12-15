@@ -19,7 +19,17 @@ object NavigationEndpoints:
 
   val giveMeTheOdds: PublicEndpoint[ImperialData, Unit, Double, Any] =
     endpoint
+      .tag("Pathfinding")
+      .name("Compute Odds")
+      .description("Compute the odds of success of the mission from the intelligence stolen from the Empire.")
       .in("givemetheodds")
       .post
-      .in(jsonBody[ImperialData])
-      .out(plainBody[Double])
+      .in(
+        jsonBody[ImperialData].description(
+          """
+          |Data stolen from the Empire containing the date of their attack which we MUST STOP AT ALL COST
+          |and the location of bounty hunters sent to capture the crew of the Millennium Falcon.
+          |""".stripMargin
+        )
+      )
+      .out(plainBody[Double].description("The odds of success of the mission between 0 and 100."))

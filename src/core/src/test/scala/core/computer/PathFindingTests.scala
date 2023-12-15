@@ -1,7 +1,7 @@
 package core.computer
 
-import core.computer.Routing.*
-import core.computer.Routing.Trajectory.Action
+import core.computer.Pathfinder.*
+import core.computer.Pathfinder.Trajectory.Action
 import core.model.*
 import core.model.Error.MissionFailure
 import io.github.iltotore.iron.*

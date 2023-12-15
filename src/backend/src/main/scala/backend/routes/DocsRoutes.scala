@@ -15,4 +15,4 @@ object DocsRoutes:
     Resource.pure:
       new DocsRoutes:
         override val serverEndpoints: List[ServerEndpoint[Any, IO]] =
-          SwaggerInterpreter().fromEndpoints[IO](endpoints, BuildInfo.name, BuildInfo.version)
+          SwaggerInterpreter().fromEndpoints[IO](endpoints, "C3P0", BuildInfo.version)

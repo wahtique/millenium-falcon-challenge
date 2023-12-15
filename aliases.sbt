@@ -39,7 +39,6 @@ onLoadMessage +=
       |│ ${styled("ca")}          │ compile all       │
       |│ ${styled("t")}           │ test              │
       |│ ${styled("r")}           │ reload sbt        │
-      |│ ${styled("s")}           │ reStop            │
       |│ ${styled("star")}        │ thankYouStars     │
       |│ ${styled("check")}       │ fmt & fix check   │
       |│ ${styled("fix")}         │ fix then fmt      │

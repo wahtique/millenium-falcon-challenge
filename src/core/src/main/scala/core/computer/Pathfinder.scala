@@ -2,11 +2,12 @@ package core.computer
 
 import cats.kernel.Order
 import cats.syntax.order.*
-import core.computer.Routing.Trajectory.Action
+import core.computer.Pathfinder.Trajectory.Action
 import core.model.*
 import core.model.Error.MissionFailure
 import io.github.iltotore.iron.*
-object Routing:
+
+object Pathfinder:
 
   def findBestOddsStrict(
       galaxy: Galaxy,

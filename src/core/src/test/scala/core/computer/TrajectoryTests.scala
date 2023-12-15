@@ -1,8 +1,8 @@
 package core.computer
 
 import cats.syntax.order.*
-import core.computer.Routing.Trajectory
-import core.computer.Routing.Trajectory.Action.*
+import core.computer.Pathfinder.Trajectory
+import core.computer.Pathfinder.Trajectory.Action.*
 import core.model.Planet
 import io.github.iltotore.iron.*
 import munit.ScalaCheckSuite
