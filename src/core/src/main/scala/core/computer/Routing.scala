@@ -1,6 +1,5 @@
 package core.computer
 
-import cats.data.NonEmptySeq
 import cats.kernel.Order
 import cats.syntax.order.*
 import core.computer.Routing.Trajectory.Action
@@ -9,68 +8,59 @@ import core.model.Error.MissionFailure
 import io.github.iltotore.iron.*
 object Routing:
 
-  def findBestOdds(galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays)(
-      origin: Planet,
-      destination: Planet
+  def findBestOddsStrict(
+      galaxy: Galaxy,
+      imperialData: ImperialData,
+      missionParameters: MissionParameters
+  ): SuccessOdds =
+    findBestOdds(galaxy, imperialData, missionParameters).getOrElse(0.toDouble.assume)
+
+  def findBestOdds(
+      galaxy: Galaxy,
+      imperialData: ImperialData,
+      missionParameters: MissionParameters
   ): Either[MissionFailure, SuccessOdds] =
-    val bestTrajetoryOrError = findBestTrajectory(galaxy, imperialData, autonomy)(origin, destination)
+    val bestTrajetoryOrError = findBestTrajectory(galaxy, imperialData, missionParameters)
     val oddsOrError: Either[MissionFailure, SuccessOdds] = bestTrajetoryOrError.map: t =>
-      if t.head == destination then SuccessOdds.compute(t.encounters)
+      if t.head == missionParameters.arrival then SuccessOdds.compute(t.encounters)
       else 0.toDouble.assume
     oddsOrError
 
-  // todo use config for max autonomy
-  /** Find the best odds to reach a destination from an origin.
-    *
-    * In practice the destination would always be Endor.
-    *
-    * @param galaxy
-    *   the galaxy to search in
-    * @param imperialData
-    *   bounty hunters locations
-    * @param autonomy
-    *   the number of days the Millenium Falcon can travel before refueling
-    * @param origin
-    *   the starting point
-    * @param destination
-    *   the destination
-    * @return
-    *   trajectory minimizing risk of failure, or an error
-    */
-  def findBestTrajectory(galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays)(
-      origin: Planet,
-      destination: Planet
+  def findBestTrajectory(
+      galaxy: Galaxy,
+      imperialData: ImperialData,
+      missionParameters: MissionParameters
   ): Either[MissionFailure, Trajectory] =
+    val origin      = missionParameters.departure
+    val destination = missionParameters.arrival
+    val autonomy    = missionParameters.autonomy
     // some trivial cases
     // if either the origin or destination is unreachable, the odds are 0
     if !(galaxy.contains(origin) && galaxy.contains(destination)) then Left(MissionFailure.UnreachablePlanet)
     // if the origin is the destination then the mission is already complete
     else if origin == destination then
       Right(
-        Trajectory(NonEmptySeq.one(origin), Trajectory.Action.Noop, autonomy, 0, 0)
+        Trajectory(origin, Seq.empty, Trajectory.Action.Noop, autonomy, 0, 0)
       )
     // if the origin is not the same as the destination and the count down is 0 then the mission is already failed
-    else if imperialData.countDown == 0 then Left(MissionFailure.MissionAlreadyFailed)
+    else if imperialData.countdown == 0 then Left(MissionFailure.MissionAlreadyFailed)
     // if the millenium falcon can't fly then the mission will fail
     else if autonomy == 0 then Left(MissionFailure.MilleniumFalconCantFly)
     else
-      // exploration loop
       @tailrec
       def explore(trajectories: Seq[Trajectory]): Option[Trajectory] =
-        trajectories.minOption match
+        trajectories.minOption(using Trajectory.ordering) match
           case None => None // no more trajectories to explore => mission failed
           case Some(trajectory) =>
             val pivot = trajectory.head
-            // stop condition : the destination is reached
             if pivot == destination then Some(trajectory)
             else
-              // explore the next possible trajectories
-              // first option is to travel
-              // second option is to refuel in place
-              explore(expand(galaxy, imperialData, autonomy)(trajectory) ++ trajectories.filterNot(_ == trajectory))
-      // start with the origin
+              val newTrajectories  = expand(galaxy, imperialData, autonomy)(trajectory)
+              val nextTrajectories = newTrajectories ++ trajectories.filterNot(_ == trajectory)
+              explore(nextTrajectories)
       val firstTrajectory = Trajectory(
-        steps = NonEmptySeq.one(origin),
+        head = origin,
+        tail = Seq.empty,
         latestAction = Trajectory.Action.Noop,
         remainingFuel = autonomy,
         daysIntoMission = 0,
@@ -84,33 +74,30 @@ object Routing:
     val head   = trajectory.head
     val routes = galaxy.routesFrom(head)
     val travels = routes
-      // avoid cycles
+      // avoid back and forth
       .filter: r =>
-        trajectory.steps match
-          case NonEmptySeq(head, previous :: _) => !(r.origin == previous || r.destination == previous)
-          case _                                => true
+        trajectory.tail.toList match
+          case previous :: _ if trajectory.latestAction == Action.Travel =>
+            r.origin != previous.head && r.destination != previous.head
+          case _ => true
       .map: r =>
         trajectory.next(r, imperialData)
-    val refuel = trajectory.refuel(imperialData, maxAutonomy)
+    // waiting multiple days seem unlikely to be a good strategy
+    // ? I might be wrong tho : this is a heuristics deduced from
+    val refuel = if trajectory.latestAction == Action.Refuel then None else trajectory.refuel(imperialData, maxAutonomy)
     (travels + refuel)
       .collect:
         case Some(t) => t
       .toSeq
 
   final case class Trajectory(
-      steps: NonEmptySeq[Planet],
+      head: Planet,
+      tail: Seq[Trajectory],
       latestAction: Trajectory.Action,
       remainingFuel: MissionDays,
       daysIntoMission: MissionDays,
       encounters: EncounterCount
   ):
-    /** End position of the Millenium Falcon if it follows this trajectory
-      *
-      * @return
-      *   the last planet of the trajectory
-      */
-    def head: Planet = steps.head
-
     /** The next possible trajectory from this one if the Millenium Falcon follows the given route.
       *
       * @param route
@@ -125,14 +112,15 @@ object Routing:
       val isBountyHunterPresentAfter =
         imperialData.isBountyHunterPresent(route.destination, daysIntoMissionAfter.assume)
       val hasEnoughFuel          = remainingFuel >= route.travelTime
-      val wouldFailMission       = daysIntoMissionAfter >= imperialData.countDown
+      val wouldFailMission       = daysIntoMissionAfter > imperialData.countdown
       val isRouteConnectedToHead = route.origin == head || route.destination == head
       if !hasEnoughFuel || wouldFailMission || !isRouteConnectedToHead then None
       else
         val nextPlanet = if route.origin == head then route.destination else route.origin
         Some(
           Trajectory(
-            steps = nextPlanet +: steps, // prepend so that head is always the current position
+            head = nextPlanet,
+            tail = this +: tail,
             latestAction = Trajectory.Action.Travel,
             remainingFuel = (remainingFuel - route.travelTime).assume,     // safe because of the check above
             daysIntoMission = (daysIntoMission + route.travelTime).assume, // safe because of additivity and check above
@@ -153,13 +141,14 @@ object Routing:
       */
     def refuel(imperialData: ImperialData, maxAutonomy: MissionDays): Option[Trajectory] =
       val daysIntoMissionAfter       = (daysIntoMission + 1).assume
-      val wouldFailMission           = daysIntoMissionAfter >= imperialData.countDown
+      val wouldFailMission           = daysIntoMissionAfter >= imperialData.countdown
       val isBountyHunterPresentAfter = imperialData.isBountyHunterPresent(head, daysIntoMissionAfter)
       if wouldFailMission then None
       else
         Some(
           Trajectory(
-            steps = steps, // add again the current position
+            head = head,
+            tail = this +: tail, // add again the current position
             latestAction = Trajectory.Action.Refuel,
             remainingFuel = maxAutonomy,                    // safe because of the check above
             daysIntoMission = (daysIntoMission + 1).assume, // safe because of additivity and check above
@@ -179,12 +168,13 @@ object Routing:
           case (Travel, Refuel) => -1
           case (Refuel, Travel) => 1
           case _                => 0
+      given Order[Action] = Order.fromOrdering
 
     // simple heuristic to determine the best path
     // the best path is the one with the less encounters as they affect the success rate of the mission
     // then the path which favorise traveling instead of refueling ( avoid infinite refuelin loops )
     // then the path with the less days into the mission as it gives more time to complete the mission
-    given Ordering[Trajectory] =
+    given ordering: Ordering[Trajectory] =
       Ordering.by[Trajectory, (Int, Action, Int)](gp => (gp.encounters, gp.latestAction, gp.daysIntoMission))
 
     // same as above for cats ecosystem

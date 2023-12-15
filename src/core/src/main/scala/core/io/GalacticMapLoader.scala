@@ -14,15 +14,16 @@ import core.model.Galaxy
 import core.model.MissionDays
 import core.model.Planet
 import core.model.Route
+import java.nio.file.Path
 
-trait GalacticMap:
+trait GalacticMapLoader:
   def load: EitherT[IO, IOFailure, Galaxy]
 
-object GalacticMap:
+object GalacticMapLoader:
 
   final case class GalaxyLine(ORIGIN: String, DESTINATION: String, TRAVEL_TIME: Int) derives sq.Reader
 
-  def make(location: String): Resource[IO, GalacticMap] =
+  def make(location: Path): Resource[IO, GalacticMapLoader] =
 
     val ds = Resource.pure[IO, HikariDataSource]:
       val hds = HikariDataSource()
@@ -30,7 +31,7 @@ object GalacticMap:
       hds
 
     ds.map: hds =>
-      new GalacticMap:
+      new GalacticMapLoader:
         def load: EitherT[IO, IOFailure, Galaxy] =
           val galaxyOrThrowable = for
             lines <- EitherT[IO, Throwable, List[GalaxyLine]](

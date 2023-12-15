@@ -11,25 +11,25 @@ class GalacticMapTests extends CatsEffectSuite with TestResourceLoader:
 
   test("Load galactic map"):
     val file   = testResource("examples/example1/universe.db")
-    val map    = GalacticMap.make(file.toAbsolutePath().toString())
+    val map    = GalacticMapLoader.make(file.toAbsolutePath())
     val galaxy = map.use(_.load.value)
     assertIOBoolean(galaxy.map(_.isRight))
 
   test("load a non-empty galactic map"):
     val file   = testResource("examples/example1/universe.db")
-    val map    = GalacticMap.make(file.toAbsolutePath().toString())
+    val map    = GalacticMapLoader.make(file.toAbsolutePath())
     val galaxy = map.use(_.load.value)
     assertIOBoolean(galaxy.map(_.exists(_.planets.nonEmpty)))
 
   test("load a galaxy containing Endor"):
     val file   = testResource("examples/example1/universe.db")
-    val map    = GalacticMap.make(file.toAbsolutePath().toString())
+    val map    = GalacticMapLoader.make(file.toAbsolutePath())
     val galaxy = map.use(_.load.value)
     assertIOBoolean(galaxy.map(_.exists(_.planets.contains(Planet("Endor")))))
 
   test("planet Endor should have some routes"):
     val file         = testResource("examples/example1/universe.db")
-    val map          = GalacticMap.make(file.toAbsolutePath().toString())
+    val map          = GalacticMapLoader.make(file.toAbsolutePath())
     val galaxy       = map.use(_.load.value)
     val actualRoutes = galaxy.map(_.map(_.routesFrom(Planet("Endor"))))
     val expectedRoutes =

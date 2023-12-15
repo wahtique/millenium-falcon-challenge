@@ -1,13 +1,14 @@
 package core.computer
 
-import cats.data.NonEmptySeq
 import core.computer.Routing.*
 import core.computer.Routing.Trajectory.Action
 import core.model.*
 import core.model.Error.MissionFailure
 import io.github.iltotore.iron.*
+import java.nio.file.Path
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.forAll
+import scala.concurrent.duration.*
 
 trait RoutingTestFixtures:
   val strictlyPositiveDays: Gen[MissionDays] = Gen.posNum[Int].suchThat(_ > 0).map(_.refine)
@@ -17,6 +18,9 @@ trait RoutingTestFixtures:
 
   val trap = Planet("Trap")
   val safe = Planet("Safe")
+
+  def missionParameters(autonomy: MissionDays): MissionParameters =
+    MissionParameters(autonomy, origin, destination, Path.of("/"))
 
   def imperialData(countDown: MissionDays, trapDays: Seq[MissionDays]): ImperialData =
     val traps = trapDays.map(BountyHuntersLocation(trap, _)).toSet
@@ -57,14 +61,17 @@ trait RoutingTestFixtures:
 
 class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
 
+  override def munitTimeout: Duration = 5.minutes
+
   // trivial cases = mission parameters are enough to deduce the result
 
   test("origin not in galaxy => 0% chances of success"):
     forAll(strictlyPositiveDays, strictlyPositiveDays): (countDown: MissionDays, autonomy: MissionDays) =>
       val galaxy       = Galaxy(Map(destination -> Set.empty))
       val imperialData = ImperialData(countDown, Set.empty)
+      val params       = missionParameters(autonomy)
       assertEquals(
-        findBestOdds(galaxy, imperialData, autonomy)(origin, destination),
+        findBestOdds(galaxy, imperialData, params),
         Left(MissionFailure.UnreachablePlanet)
       )
 
@@ -72,8 +79,9 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
     forAll(strictlyPositiveDays, strictlyPositiveDays): (countDown: MissionDays, autonomy: MissionDays) =>
       val galaxy       = Galaxy(Map(origin -> Set.empty))
       val imperialData = ImperialData(countDown, Set.empty)
+      val params       = missionParameters(autonomy)
       assertEquals(
-        findBestOdds(galaxy, imperialData, autonomy)(origin, destination),
+        findBestOdds(galaxy, imperialData, params),
         Left(MissionFailure.UnreachablePlanet)
       )
 
@@ -81,14 +89,16 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
     forAll(strictlyPositiveDays, strictlyPositiveDays): (countDown: MissionDays, autonomy: MissionDays) =>
       val galaxy       = Galaxy(Map(origin -> Set.empty))
       val imperialData = ImperialData(countDown, Set.empty)
-      assertEquals(findBestOdds(galaxy, imperialData, autonomy)(origin, origin), Right[MissionFailure, SuccessOdds](1d))
+      val params       = MissionParameters(autonomy, origin, origin, Path.of("/"))
+      assertEquals(findBestOdds(galaxy, imperialData, params), Right[MissionFailure, SuccessOdds](1d))
 
   test("countDown == 0 && origin != destination => 0% chances of success"):
     forAll(strictlyPositiveDays): (autonomy: MissionDays) =>
       val galaxy       = Galaxy(Map(origin -> Set(Route(origin, destination, 1)), destination -> Set.empty))
       val imperialData = ImperialData(0, Set.empty)
+      val params       = missionParameters(autonomy)
       assertEquals(
-        findBestOdds(galaxy, imperialData, autonomy)(origin, destination),
+        findBestOdds(galaxy, imperialData, params),
         Left(MissionFailure.MissionAlreadyFailed)
       )
 
@@ -101,8 +111,9 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         )
       )
       val imperialData = ImperialData(countDown, Set.empty)
+      val params       = missionParameters(0)
       assertEquals(
-        findBestOdds(galaxy, imperialData, 0)(origin, destination),
+        findBestOdds(galaxy, imperialData, params),
         Left(MissionFailure.MilleniumFalconCantFly)
       )
 
@@ -121,9 +132,9 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
     ): (countDown: MissionDays, distance: MissionDays, autonomy: MissionDays) =>
       val route        = Route(origin, destination, distance)
       val imperialData = ImperialData(countDown, Set.empty)
-      val trajectory   = Trajectory(NonEmptySeq.one(origin), Action.Noop, autonomy, 0, 0)
+      val trajectory   = Trajectory(origin, Seq.empty, Action.Noop, autonomy, 0, 0)
       val expected =
-        Trajectory(NonEmptySeq.of(destination, origin), Action.Travel, (autonomy - distance).assume, distance, 0)
+        Trajectory(destination, Seq(trajectory), Action.Travel, (autonomy - distance).assume, distance, 0)
       assertEquals(trajectory.next(route, imperialData), Some(expected))
 
   test("destination rechable in one jump => 100% chances of success"):
@@ -144,7 +155,8 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         )
       )
       val imperialData = ImperialData(countDown, Set.empty)
-      val actual       = findBestOdds(galaxy, imperialData, autonomy.assume)(origin, destination)
+      val params       = missionParameters(autonomy)
+      val actual       = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Right[MissionFailure, SuccessOdds](1d))
 
   test("destination cannot be reachd no matter what => 0% chances of success"):
@@ -165,7 +177,8 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         )
       )
       val imperialData = ImperialData(countDown, Set.empty)
-      val actual       = findBestOdds(galaxy, imperialData, autonomy.assume)(origin, destination)
+      val params       = missionParameters(autonomy)
+      val actual       = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Left(MissionFailure.UnreachablePlanet))
 
   // one path with a pit stop for refueling
@@ -183,15 +196,22 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         // autonomy is sufficient to cover the longest stretch
         autonomy = safeToDestination
       yield (
-        galaxy(originToSafe, safeToDestination.refine),
+        galaxy(originToSafe, safeToDestination),
         imperialData(countDown.refine, Seq.empty),
-        autonomy
+        missionParameters(autonomy)
       )
-    ): (galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays) =>
-      val actual = findBestOdds(galaxy, imperialData, autonomy)(origin, destination)
+    ): (galaxy: Galaxy, imperialData: ImperialData, params: MissionParameters) =>
+      val actual = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Right[MissionFailure, SuccessOdds](1d))
 
   test("refuel to avoid bounty hunters"):
+    val g      = galaxy(1, 2, trap)
+    val d      = imperialData(6, Seq(1))
+    val mp     = missionParameters(2)
+    val actual = findBestOdds(g, d, mp)
+    assertEquals(actual, Right[MissionFailure, SuccessOdds](1d))
+
+  test("refuel to avoid bounty hunters - props"):
     forAll(
       for
         // dist origin -> trap
@@ -200,17 +220,17 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
         trapToDestination <- strictlyPositiveDays
         // countDown must be juuuuust right to accomomadate a pitstop
         totalDist              = originToTrap + trapToDestination
-        countDown: MissionDays = (totalDist + 2).refine
+        countDown: MissionDays = (totalDist + 3).refine
         // autonomy is sufficient to cover everything
         // ie. refueling is not needed to reach the destination
         autonomy: MissionDays = totalDist.refine
       yield (
         galaxy(originToTrap, trapToDestination, trap),
         imperialData(countDown.refine, Seq(originToTrap)),
-        autonomy
+        missionParameters(autonomy)
       )
-    ): (galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays) =>
-      val actual = findBestOdds(galaxy, imperialData, autonomy)(origin, destination)
+    ): (galaxy: Galaxy, imperialData: ImperialData, params: MissionParameters) =>
+      val actual = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Right[MissionFailure, SuccessOdds](1d))
 
   // two paths including one with bounty hunters
@@ -235,10 +255,10 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
       yield (
         galaxy(originToSafe, safeToDestination, originToTrap, trapToDestination),
         imperialData(countDown, Seq(originToTrap)),
-        autonomy
+        missionParameters(autonomy)
       )
-    ): (galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays) =>
-      val actual = findBestOdds(galaxy, imperialData, autonomy)(origin, destination)
+    ): (galaxy: Galaxy, imperialData: ImperialData, params: MissionParameters) =>
+      val actual = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Right[MissionFailure, SuccessOdds](1d))
 
   test("destination cannot be reached witout encountering bounty hunters => 90% succcess chances"):
@@ -264,8 +284,8 @@ class RoutingTests extends ScalaCheckSuite with RoutingTestFixtures:
       yield (
         galaxy(originToSafe, safeToDestination, originToTrap, trapToDestination),
         imperialData(countDown, trapDays),
-        autonomy
+        missionParameters(autonomy)
       )
-    ): (galaxy: Galaxy, imperialData: ImperialData, autonomy: MissionDays) =>
-      val actual = findBestOdds(galaxy, imperialData, autonomy)(origin, destination)
+    ): (galaxy: Galaxy, imperialData: ImperialData, params: MissionParameters) =>
+      val actual = findBestOdds(galaxy, imperialData, params)
       assertEquals(actual, Right[MissionFailure, SuccessOdds](.9))

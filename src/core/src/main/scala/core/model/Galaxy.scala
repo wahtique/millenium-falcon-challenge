@@ -2,12 +2,14 @@ package core.model
 
 import cats.kernel.Monoid
 import cats.syntax.monoid.*
+import io.circe.Decoder
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.string.*
 
 type NotBlank      = Not[Blank]
 opaque type Planet = String :| NotBlank
-object Planet extends RefinedTypeOps[String, NotBlank, Planet]
+object Planet extends RefinedTypeOps[String, NotBlank, Planet]:
+  given decoder: Decoder[Planet] = Decoder.decodeString.emap(Planet.either)
 
 /** Millenias of astrophysics summed up in one line.
   *
