@@ -142,10 +142,6 @@ lazy val backend =
           val oldStrategy = (assembly / assemblyMergeStrategy).value
           oldStrategy(x)
       },
-      // assembly / assemblyExcludedJars := {
-      //   val cp: Classpath = (assembly / fullClasspath).value
-      //   cp.filter(jar => jar.data.getName == "snakeyaml-2.2.jar")
-      // },
       // deps
       libraryDependencies ++= Seq(
         com.softwaremill.sttp.tapir.tapirCore,           // type safe api definition
