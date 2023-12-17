@@ -121,7 +121,6 @@ lazy val backend =
       // build info
       buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
       buildInfoPackage := "backend",
-      // fixme sql lite not found in the uber jar
       // JAR assembly
       assembly / mainClass       := Some("backend.Main"),
       assembly / assemblyJarName := "navicore.jar",
