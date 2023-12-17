@@ -76,21 +76,30 @@ Some things I would usually deem necessary for a production ready app but did no
 ### Requirements
 
 - Scala build tool [sbt](https://www.scala-sbt.org/) : needed to actually build and run the project
+- Any JDK > 8 ( I am using OpenJDK 19 )
 - [yarn](https://yarnpkg.com/) : needed to run and build the frontend
 - task runner [just](https://just.systems/) : some examples in this doc might use it, but it's not mandatory. Please refer to the [justfile](justfile) for the actual commands.
 
 All the commands below can also be run from the sbt console ( copy the one in the recipe ).
 
+### Build the projects
+
+Both cli and frontend can be built once which will let us avoid sbt startup time
+
+```bash
+just build
+```
+
 ### Run the cli
 
 ```bash
-just cli {{ path to millenium-falcon.json }} {{ path to empire.json }}
+just r2d2 {{ path to millenium-falcon.json }} {{ path to empire.json }}
 ```
 
 ### Run the backend
 
 ```bash
-just backend {{ path to millenium-falcon.json }}
+just navicore {{ path to millenium-falcon.json }}
 ```
 
 Swagger UI is available at <http://localhost:8080/docs>
@@ -98,7 +107,7 @@ Swagger UI is available at <http://localhost:8080/docs>
 ### Run the frontend
 
 ```bash
-just frontend
+just c3p0
 ```
 
 Go to <http://localhost:1234>

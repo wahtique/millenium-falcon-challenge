@@ -100,6 +100,10 @@ lazy val cli =
     .settings(autoImportSettings)
     .settings(commonDependencies)
     .settings(
+      // JAR assembly
+      assembly / mainClass       := Some("cli.R2D2"),
+      assembly / assemblyJarName := "r2d2.jar",
+      // deps
       libraryDependencies ++= Seq(
         com.monovore.decline,      // cli
         com.monovore.declineEffect // cli <-> cats effect
@@ -114,8 +118,36 @@ lazy val backend =
     .settings(autoImportSettings)
     .settings(commonDependencies)
     .settings(
+      // build info
       buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
       buildInfoPackage := "backend",
+      // fixme sql lite not found in the uber jar
+      // JAR assembly
+      assembly / mainClass       := Some("backend.Main"),
+      assembly / assemblyJarName := "navicore.jar",
+      assembly / assemblyMergeStrategy := {
+        case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") =>
+          MergeStrategy.singleOrError
+        case PathList("META-INF", "resources", "webjars", "swagger-ui", _*) =>
+          MergeStrategy.singleOrError
+        // magic incantation to make the jdbc driver stick
+        case PathList("META-INF", xs @ _*) =>
+          xs.map(_.toLowerCase) match {
+            case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) |
+                ("license" :: Nil) | ("notice" :: Nil) =>
+              MergeStrategy.discard
+            case _ => MergeStrategy.first // was 'discard' previousely
+          }
+        case PathList("META-INF", _*) => MergeStrategy.discard // Optional, but usually required
+        case x =>
+          val oldStrategy = (assembly / assemblyMergeStrategy).value
+          oldStrategy(x)
+      },
+      // assembly / assemblyExcludedJars := {
+      //   val cp: Classpath = (assembly / fullClasspath).value
+      //   cp.filter(jar => jar.data.getName == "snakeyaml-2.2.jar")
+      // },
+      // deps
       libraryDependencies ++= Seq(
         com.softwaremill.sttp.tapir.tapirCore,           // type safe api definition
         com.softwaremill.sttp.tapir.tapirCirce,          // json
@@ -140,4 +172,3 @@ lazy val frontend =
       ),
       scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) }
     )
-    .dependsOn(core)
