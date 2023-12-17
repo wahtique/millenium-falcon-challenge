@@ -57,7 +57,7 @@ A few things to note :
 - the app is defined as a  `cats-effect` `ResoureApp` which in this case is almost pure esthetics. However, since the specs specified this should be something prod ready of which I could be proud of, I decided to overengineer a bit on this side.
 - same goes for defining everything as both a `trait` and a resource factory materilized by a `make` method in companion objects. This would usually allow for defining test implementations in order to unit test each leayer ... which I did not do here as the actual logic is ( relatively ) sufficiently `core` tested
 
-The backend also exposes a Swagger UI which is technically a SPA frontend. Please do use it as an alternative to my frontend if you run into troubles to launche it !
+The backend also exposes a Swagger UI which is technically a SPA frontend. Please do use it as an alternative to my frontend if you run into troubles to launch it !
 
 ### Frontend
 
@@ -100,3 +100,5 @@ Swagger UI is available at <http://localhost:8080/docs>
 ```bash
 just frontend
 ```
+
+Go to <http://localhost:1234>
