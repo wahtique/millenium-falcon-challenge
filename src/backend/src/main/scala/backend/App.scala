@@ -12,6 +12,8 @@ import core.io.MissionParametersLoader
 import java.nio.file.Path
 import org.http4s.HttpApp
 import org.http4s.implicits.*
+import org.http4s.server.middleware.CORS
+import scala.util.chaining
 
 object App:
   def make(missionParamsPath: String): Resource[IO, HttpApp[IO]] =
@@ -27,4 +29,5 @@ object App:
       navigationRoutes <- NavigationRoutes.make(navigationService)
       swagger          <- DocsRoutes.make(List(NavigationEndpoints.giveMeTheOdds))
       routes = List(navigationRoutes, swagger).map(_.routes).foldK
-    yield routes.orNotFound
+      app    = routes.orNotFound.pipe(CORS.policy.withAllowOriginAll.apply)
+    yield app

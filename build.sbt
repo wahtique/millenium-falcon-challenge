@@ -126,3 +126,18 @@ lazy val backend =
       )
     )
     .dependsOn(core)
+
+lazy val frontend =
+  project
+    .in(file("src/frontend"))
+    .settings(commonSettings)
+    .settings(autoImportSettings)
+    .settings(commonDependencies)
+    .enablePlugins(ScalaJSPlugin)
+    .settings(
+      libraryDependencies ++= Seq(
+        "io.indigoengine" %%% "tyrian-io" % "0.8.0"
+      ),
+      scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) }
+    )
+    .dependsOn(core)

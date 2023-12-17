@@ -12,6 +12,7 @@ To rise up to the challenge, I decided to use a combination of language and libr
 - effect system : [cats-effect](https://typelevel.org/cats-effect/)
 - http : [tapir](https://tapir.softwaremill.com) + [http4s](https://http4s.org/)
 - cli : [decline](https://ben.kirw.in/decline/)
+- frontend : [tyrian](https://tyrian.indigoengine.io/)
 - other notable libraries :
   - [cats](https://typelevel.org/cats/) : functional programming toolkit
   - [circe](https://circe.github.io/circe/) : json
@@ -27,7 +28,8 @@ This project is structured as a multi-module sbt project. It contains the follow
   - `computer` : puzzle solving logic = the navigation computer of the Millennium Falcon
 - `cli` : aka R2D2, a CLI app which provides arg parsing and depends on `core` for the actual logic
 - `backend` : a REST API which depends on `core` for the actual logic
-  - it also exposes the frontend, aka C3PO, as a SwaggerUI ... which I would argue is, in fact, a frontend SPA
+- `frontend` : a ScalaJS frontend without any dependency on the other projects
+  - NB : a possibility for strong typing all communications between back and front ends would a have been to depends on an API module common do both exposing tapir's API definitions
 
 ### Core
 
@@ -55,7 +57,11 @@ A few things to note :
 - the app is defined as a  `cats-effect` `ResoureApp` which in this case is almost pure esthetics. However, since the specs specified this should be something prod ready of which I could be proud of, I decided to overengineer a bit on this side.
 - same goes for defining everything as both a `trait` and a resource factory materilized by a `make` method in companion objects. This would usually allow for defining test implementations in order to unit test each leayer ... which I did not do here as the actual logic is ( relatively ) sufficiently `core` tested
 
-The backend also exposes a Swagger UI which is technicall a frontend Single Page Application which allow to both send teh input JSON and display the output success odds. Since my own implementation of a frontend would have been both very similar and very ugly, I hope we can say the Swagger UI shall suffice :)
+The backend also exposes a Swagger UI which is technically a SPA frontend. Please do use it as an alternative to my frontend if you run into troubles to launche it !
+
+### Frontend
+
+The frontend is a ScalaJS app build using [Tyrian](https://tyrian.indigoengine.io/), an Elm-inspired framework by the same creatores as the [Indigo game engine](https://indigoengine.io/). Arguably, using an unstable version of a brand new lib which would be unuseable for most of the industry because it requires the very newest version of Scala might not be the best of ideas but I find teh Elm architecture very elegant and wanted to try it out. The full stack aspect and the fact that it allow me to havea very clean repository structure are just the cherry on top !
 
 ### Todo-list
 
@@ -69,7 +75,8 @@ Some things I would usually deem necessary for a production ready app but did no
 
 ### Requirements
 
-- build tool [sbt](https://www.scala-sbt.org/) : needed to actually build and run the project
+- Scala build tool [sbt](https://www.scala-sbt.org/) : needed to actually build and run the project
+- [yarn](https://yarnpkg.com/) : needed to run and build the frontend
 - task runner [just](https://just.systems/) : some examples in this doc might use it, but it's not mandatory. Please refer to the [justfile](justfile) for the actual commands.
 
 All the commands below can also be run from the sbt console ( copy the one in the recipe ).
@@ -87,3 +94,9 @@ just backend {{ path to millenium-falcon.json }}
 ```
 
 Swagger UI is available at <http://localhost:8080/docs>
+
+### Run the frontend
+
+```bash
+just frontend
+```
