@@ -96,10 +96,22 @@ just build
 just r2d2 {{ path to millenium-falcon.json }} {{ path to empire.json }}
 ```
 
+If for some reason or other this does not work, fallback on calling sbt :
+
+```bash
+just cli {{ path to millenium-falcon.json }} {{ path to empire.json }}
+```
+
 ### Run the backend
 
 ```bash
 just navicore {{ path to millenium-falcon.json }}
+```
+
+If for some reason or other this does not work, fallback on calling sbt :
+
+```bash
+just backend {{ path to millenium-falcon.json }}
 ```
 
 Swagger UI is available at <http://localhost:8080/docs>
@@ -108,6 +120,12 @@ Swagger UI is available at <http://localhost:8080/docs>
 
 ```bash
 just c3p0
+```
+
+This one should work for sure but if ever it does not, fallback on calling sbt :
+
+```bash
+just frontend
 ```
 
 Go to <http://localhost:1234>
