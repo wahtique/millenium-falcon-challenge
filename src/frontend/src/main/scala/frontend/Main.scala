@@ -51,9 +51,10 @@ object Main extends TyrianApp[Msg, Model]:
       div(`class` := "row")(
         div(`class` := "col-12")(
           textarea(
-            id   := "stolenImperialData",
-            rows := 10,
-            cols := 30,
+            id      := "stolenImperialData",
+            rows    := 20,
+            cols    := 50,
+            `class` := "form-control",
             onInput(s => Msg.InputStolenData(s))
           )()
         )
@@ -61,6 +62,7 @@ object Main extends TyrianApp[Msg, Model]:
       div(`class` := "row")(
         div(`class` := "col-12")(
           button(
+            `class` := "btn btn-primary text-dark mr-2 mb-2",
             onClick(Msg.GiveMeTheOdds)
           )(text("Give me the odds"))
         )
