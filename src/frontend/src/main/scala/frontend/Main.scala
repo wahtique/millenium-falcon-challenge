@@ -1,6 +1,7 @@
 package frontendd
 
 import cats.effect.IO
+import java.util.Base64
 import scala.scalajs.js.annotation.*
 import tyrian.*
 import tyrian.Html.*
@@ -11,9 +12,10 @@ type Model = String
 
 enum Msg:
   case NoOp
-  case InputStolenData(data: String)
+  case InputStolenData
   case GiveMeTheOdds
   case Odds(oddsOrError: String)
+  case Read(contents: String)
 
 @JSExportTopLevel("TyrianApp")
 object Main extends TyrianApp[Msg, Model]:
@@ -24,9 +26,22 @@ object Main extends TyrianApp[Msg, Model]:
 
   def update(model: Model): Msg => (Model, Cmd[IO, Msg]) =
     case Msg.NoOp => (model, Cmd.None)
-    case Msg.InputStolenData(data) =>
-      val log: Cmd[IO, Msg] = Logger.info(s"InputStolenData: $data")
-      (data, log)
+    case Msg.InputStolenData =>
+      val readFile: Cmd[IO, Msg] = FileReader.readText("stolenImperialData"):
+        case FileReader.Result.Error(msg)                 => Msg.NoOp
+        case FileReader.Result.File(name, path, contents) => Msg.Read(contents)
+      (model, readFile)
+    case Msg.Read(contents) =>
+      /*
+       * Read content will look like :
+        ```
+        data:application/json;base64,ewogICJjb3VudGRvd24iOiAxMCwKICAiYm91bnR5X2h1bnRlcnMiOiBbCiAgICB7CiAgICAgICJwbGFuZXQiOiAiSG90aCIsCiAgICAgICJkYXkiOiA2CiAgICB9LAogICAgewogICAgICAicGxhbmV0IjogIkhvdGgiLAogICAgICAiZGF5IjogNwogICAgfSwKICAgIHsKICAgICAgInBsYW5ldCI6ICJIb3RoIiwKICAgICAgImRheSI6IDgKICAgIH0KICBdCn0=
+        ```
+       */
+      val base64only        = contents.split(",").last
+      val json              = new String(Base64.getDecoder.decode(base64only))
+      val log: Cmd[IO, Msg] = Logger.info(s"update model with $json")
+      (json, log)
     case Msg.GiveMeTheOdds =>
       val postSimulationParameters: Cmd[IO, Msg.Odds] = Http.send(
         Request(
@@ -49,14 +64,17 @@ object Main extends TyrianApp[Msg, Model]:
         )
       ),
       div(`class` := "row")(
-        div(`class` := "col-12")(
-          textarea(
-            id      := "stolenImperialData",
-            rows    := 20,
-            cols    := 50,
-            `class` := "form-control",
-            onInput(s => Msg.InputStolenData(s))
-          )()
+        div(`class` := "bs-component")(
+          div(`class` := "col-12")(
+            div(`class` := "form-group")(
+              input(
+                id      := "stolenImperialData",
+                `type`  := "file",
+                `class` := "form-control",
+                onInput(_ => Msg.InputStolenData)
+              )
+            )
+          )
         )
       ),
       div(`class` := "row")(
