@@ -1,6 +1,8 @@
-# Millenium Falson Challenge
+# Millenium Falcon Challenge
 
-See [Millenium Falcon Challenge](https://github.com/dataiku/millenium-falcon-challenge) challenge description.
+Coding challenge for a job application. Do what you want with this code, but keep in mind I did not get the job ;)
+
+See [Millenium Falcon Challenge](https://www.google.com/search?hl=en&q=millenium%20falcon%20challenge) ~~challenge description~~ for more information.
 
 ## Design considerations
 
